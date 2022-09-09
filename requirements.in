@@ -1,0 +1,4 @@
+django
+stripe
+pip-tools
+environs
