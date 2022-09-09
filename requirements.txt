@@ -20,6 +20,8 @@ colorama==0.4.5
     #   click
 django==4.1.1
     # via -r requirements.in
+django-autoslug==1.9.8
+    # via -r requirements.in
 environs==9.5.0
     # via -r requirements.in
 idna==3.3
