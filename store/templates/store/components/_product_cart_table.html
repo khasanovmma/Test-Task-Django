@@ -1,0 +1,18 @@
+{% load static %}
+
+<tr>
+  <th class="ps-0 py-3 border-light" scope="row">
+    <div class="d-flex align-items-center">
+      <a class="reset-anchor d-block animsition-link" href="{{ product.get_absolute_url }}"><img src="{{ product.image }}" alt="..." width="70" /></a>
+      <div class="ms-3">
+        <strong class="h6"><a class="reset-anchor animsition-link" href="{{ product.get_absolute_url }}">Red digital smartwatch</a></strong>
+      </div>
+    </div>
+  </th>
+  <td class="p-3 align-middle border-light">
+    <p class="mb-0 small">$250</p>
+  </td>
+  <td class="p-3 align-middle border-light">
+    <a class="reset-anchor" href="{{ product.get_absolute_url_for_remove_from_basket }}"><i class="fas fa-trash-alt small text-muted"></i></a>
+  </td>
+</tr>
