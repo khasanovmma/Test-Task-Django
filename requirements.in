@@ -2,4 +2,3 @@ django
 stripe
 pip-tools
 environs
-django-autoslug
