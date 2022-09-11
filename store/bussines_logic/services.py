@@ -34,12 +34,13 @@ class Basket:
             self.save()
 
     def clear(self):
-        self.session[BASKET_SESSION] = {}
-
+        self.basket = {}
+        
         self.save()
-
+    
     def save(self):
         self.session[BASKET_SESSION] = self.basket
+        
         self.session.modified = True
 
     def __iter__(self):
@@ -54,11 +55,11 @@ class Basket:
 
     def __len__(self) -> int:
         if self.basket:
-            return sum(int(item["price"]) for item in self.basket.values())
+            return len(self.basket.values())
         else:
             return 0
 
-    # def get_total_price(self) -> int:
-    #     return sum(
-    #         [int(item["price"]) * item["quantity"] for item in self.basket.values()]
-    #     )
+    def get_total_price(self) -> int:
+        return sum(
+            [int(item["price"]) for item in self.basket.values()]
+        )

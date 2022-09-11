@@ -30,22 +30,34 @@
         <link rel="stylesheet" href="{% static 'css/custom.css' %}">
         <!-- Favicon-->
         <link rel="shortcut icon" href="{% static 'img/favicon.png' %}">
+        
+        {% block links %}
+        
+        {% endblock links %}
         <title>
             {% block title %}
             {% endblock title %}
         </title>
     </head>
     <body>
-        <div class="page-holder">
+        <div class="page-holder d-flex flex-column justify-content-between">
             {% include "layout/header.html" %}
             
-        
+            
             {% block main %}
             {% endblock main %}
            
             {% include "layout/footer.html" %}
-
+            <script>
+            {% block scrpits %}
+            {% endblock scrpits %}
+            </script>
             <!-- JavaScript files-->
+            <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+            <script src="{% static 'vendor/glightbox/js/glightbox.min.js' %}"></script>
+            <script src="{% static 'vendor/nouislider/nouislider.min.js' %}"></script>
+            <script src="{% static 'vendor/swiper/swiper-bundle.min.js' %}"></script>
+            <script src="{% static 'vendor/choices.js/public/assets/scripts/choices.min.js' %}"></script>
             <!-- FontAwesome CSS - loading as last, so it doesn't block rendering-->
             <link rel="stylesheet"
                   href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"

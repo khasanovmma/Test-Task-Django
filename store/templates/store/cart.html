@@ -1,8 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block links %}
+<script src="https://js.stripe.com/v3/"></script>
+{% endblock links %}
+
 {% block main %}
 <div class="container">
+  {% include "components/_messages.html" %}
   <!-- HERO SECTION -->
   <section class="py-5 mb-3 bg-light">
     <div class="container">
@@ -44,3 +49,29 @@
   {% endif %}
 </div>
 {% endblock main %}
+
+{% block scrpits %}
+var stripe = Stripe('{{ stripe_publishable_key }}');
+var checkoutButton = document.getElementById('buy-now');
+
+checkoutButton.addEventListener('click', function (e) {
+    e.preventDefault()
+    fetch('/buy/items/', {
+        method: 'GET',
+    }).then(function (response) {
+        return response.json()
+    }).then(function (session) {
+        console.log(session)
+        return stripe.redirectToCheckout({sessionId: session.id});
+    })
+        .then(function (result) {
+           
+            if (result.error) {
+                alert(result.error.message);
+            }
+        })
+        .catch(function (error) {
+            console.error('Error:', error);
+        });
+});
+{% endblock scrpits %}

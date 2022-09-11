@@ -1,17 +1,21 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block links %}
+<script src="https://js.stripe.com/v3/"></script>
+{% endblock links %}
 
 {% block main %}
 <section class="py-5">
   <div class="container">
+    {% include "components/_messages.html" %}
     <div class="row mb-5">
-      <div class="col-lg-4">
+      <div class="col-lg-3">
         <!-- PRODUCT SLIDER-->
         {% include "store/layout/product_slider.html" %}
       </div>
       <!-- PRODUCT DETAILS-->
-      <div class="col-lg-6">
+      <div class="col-lg-9">
             {% include "store/components/_product_detail.html" %}
       </div>
       
@@ -20,3 +24,29 @@
  
 </section>
 {% endblock main %}
+
+{% block scrpits %}
+var stripe = Stripe('{{ stripe_publishable_key }}');
+var checkoutButton = document.getElementById('buy-now');
+
+checkoutButton.addEventListener('click', function (e) {
+    e.preventDefault()
+    fetch('/buy/{{ product.id }}/', {
+        method: 'GET',
+    }).then(function (response) {
+        return response.json()
+    }).then(function (session) {
+        console.log(session)
+        return stripe.redirectToCheckout({sessionId: session.id});
+    })
+        .then(function (result) {
+           
+            if (result.error) {
+                alert(result.error.message);
+            }
+        })
+        .catch(function (error) {
+            console.error('Error:', error);
+        });
+});
+{% endblock scrpits %}

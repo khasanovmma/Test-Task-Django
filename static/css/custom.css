@@ -2,3 +2,11 @@
     height: 250px;
     object-fit: cover;
 }
+
+.page-holder {
+    height: 100vh;
+}
+
+#buy-now {
+    margin-left: 15px !important;
+}

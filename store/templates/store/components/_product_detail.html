@@ -1,9 +1,18 @@
+{% load store_tags %}
+
 <h1>{{ product.name }}</h1>
 <p class="text-muted lead">${{ product.price }}</p>
 <p class="text-sm mb-4">{{ product.description }}</p>
 <div class="row align-items-stretch mb-4">
-  <div class="col-sm-3 pl-sm-0">
-    <a class="btn btn-dark btn-sm btn-block h-100 d-flex align-items-center justify-content-center px-0" href="{{ product.get_absolute_url_for_add_to_basket }}">Add to cart</a>
+  <div class="col-md-4 col-sm-6 pl-sm-0 d-flex justify-content-between">
+    {% is_product_in_basket request product as product_in_basket %}
+    {% if product_in_basket %}
+    <a class="btn btn-dark btn-sm btn-block h-100 d-flex align-items-center justify-content-center px-2" href="{% url 'basket' %}">Open cart</a>
+  {% else %}
+  <a class="btn btn-dark btn-sm btn-block h-100 d-flex align-items-center justify-content-center px-2" href="{{ product.get_absolute_url_for_add_to_basket }}">Add to cart</a>
+    
+  {% endif %}
+  <a class="btn btn-dark btn btn-block h-100 d-flex align-items-center justify-content-center px-2" id="buy-now" href="">Buy now</a>
   </div>
 </div>
 

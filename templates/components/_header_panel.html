@@ -1,3 +1,6 @@
+{% load store_tags %}
+
 <li class="nav-item">
-    <a class="nav-link" href="{% url 'basket' %}"> <i class="fas fa-dolly-flatbed me-1 text-gray"></i>Cart<small class="text-gray fw-normal">(0)</small></a>
+    {% get_product_count_basket request  as product_count_basket %}
+    <a class="nav-link" href="{% url 'basket' %}"> <i class="fas fa-dolly-flatbed me-1 text-gray"></i>Cart<small class="text-gray fw-normal">({{ product_count_basket }})</small></a>
 </li>
