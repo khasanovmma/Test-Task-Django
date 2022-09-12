@@ -6,8 +6,8 @@ from store.models.abstract import CreatedAtAbstract
 
 class Order(CreatedAtAbstract):
     items = models.ManyToManyField("store.Item", related_name='items', blank=True)
-    ordered_by =  models.CharField(max_length=120, null=True)
-    email = models.EmailField(null=True)
+    ordered_by =  models.CharField(max_length=120, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
     session_id = models.TextField(null=True)
     
     def __str__(self):
