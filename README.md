@@ -1,9 +1,9 @@
 # Test-Task-Django
 
 **Table of contents:**
-- [Installation](#markdown-header-install)
-- [Run](#markdown-header-run)
-- [Run using Docker](#markdown-header-run-using-docker)
+- [Installation](#install)
+- [Run](#run)
+- [Run using Docker](#run-using-docker)
 
 
 First of all, clone this repository in the folder and open it in cmd
