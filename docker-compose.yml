@@ -2,16 +2,18 @@ version: '3.9'
 
 services:
   web:
-    build:
-      context: .
-      dockerfile: AppDockerfile
-    container_name: django-project
+    build: .
+    environment:
+      MYENV: EXAMPLE
     volumes:
-      - .:/django-project
-      - static:/usr/src/app/static
+      - .:/code
+  web_migrate:
+    extends:
+      service: web
+    command: python manage.py migrate
+  web_run:
+    extends:
+      service: web 
+    command: python manage.py runserver 0.0.0.0:8000
     ports:
-      - 8080:8000
-
-volumes:
-  db_data:
-  static:
+      - "8000:8000"
