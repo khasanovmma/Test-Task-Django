@@ -11,9 +11,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 
 from .models.product import Item
-from .bussines_logic.services import Basket
-from .models import product, order
-from .bussines_logic.selectors import get_all_products
+from .bussines_logic.services import Basket, StripeService
+from .models import order
+from .bussines_logic.selectors import get_product_by_pk, get_current_page
 from shop.settings import STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY
 
 
@@ -39,7 +39,7 @@ class ProductDetailView(DetailView):
             name = data["customer_details"]["name"]
             email = data["customer_details"]["email"]
             order_detail = order.Order.objects.create(ordered_by=name, email=email)
-            order_detail.items.add(context['product'])
+            order_detail.items.add(context["product"])
         context["stripe_publishable_key"] = STRIPE_PUBLISHABLE_KEY
         return context
 
@@ -48,30 +48,26 @@ class AddItem(TemplateView):
     def get(self, request, *args, **kwargs):
         basket = Basket(request)
 
-        current_page = request.META.get("HTTP_REFERER")
-        item = product.Item.objects.get(pk=kwargs["pk"])
+        product = get_product_by_pk(pk=kwargs["pk"])
+        basket.add(product=product)
 
-        basket.add(product=item)
-
-        return HttpResponseRedirect(current_page)
+        return HttpResponseRedirect(get_current_page(request=request))
 
 
 class RemoveItem(TemplateView):
     def get(self, request, *args, **kwargs):
         basket = Basket(request)
 
-        current_page = request.META.get("HTTP_REFERER")
-        item = get_object_or_404(product.Item, pk=kwargs["pk"])
+        product = get_product_by_pk(pk=kwargs["pk"])
+        basket.remove(product=product)
 
-        basket.remove(item)
-
-        return HttpResponseRedirect(current_page)
+        return HttpResponseRedirect(get_current_page(request=request))
 
 
 class BasketView(TemplateView):
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> render:
         basket = Basket(request)
-        
+
         if request.GET.get("session_id"):
             messages.success(self.request, "Successfully paid")
             stripe.api_key = STRIPE_SECRET_KEY
@@ -83,9 +79,8 @@ class BasketView(TemplateView):
             for product in basket:
                 order_detail.items.add(product)
             basket.clear()
-        
-        
-        context = {"basket": basket, 'stripe_publishable_key': STRIPE_PUBLISHABLE_KEY}
+
+        context = {"basket": basket, "stripe_publishable_key": STRIPE_PUBLISHABLE_KEY}
 
         return render(request, "store/cart.html", context=context)
 
@@ -93,58 +88,18 @@ class BasketView(TemplateView):
 @method_decorator(csrf_exempt, name="dispatch")
 class BuyItem(View):
     def get(self, request, pk):
-        item = Item.objects.get(pk=pk)
-        stripe.api_key = STRIPE_SECRET_KEY
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[
-                {
-                    "price_data": {
-                        "currency": "usd",
-                        "product_data": {
-                            "name": item.name,
-                            "description": item.description,
-                        },
-                        "unit_amount": item.price * 100,  # 100.00
-                    },
-                    "quantity": 1,
-                }
-            ],
-            mode="payment",
-            success_url=request.build_absolute_uri(reverse("detail", args=[item.id]))
-            + "?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url=request.build_absolute_uri(reverse("detail", args=[item.id])),
-        )
-        return JsonResponse({"id": session.id})
- 
- 
-@method_decorator(csrf_exempt, name="dispatch")   
+        product = get_product_by_pk(pk=pk)
+        stripe_service = StripeService()
+        session_id = stripe_service.checkout(request=request, products=product)
+
+        return JsonResponse({"id": session_id})
+
+
+@method_decorator(csrf_exempt, name="dispatch")
 class BuyItems(View):
     def get(self, request):
-        stripe.api_key = STRIPE_SECRET_KEY
-        basket = Basket(request)
-        line_items = []
-        for item in basket:
-            line_items.append({
-                'price_data': {
-                    'currency': 'usd',
-                    'product_data': {
-                        'name': item.name,
-                        'description': item.description
-                    },
-                    'unit_amount': item.price * 100,
-    
-                },
-                'quantity': 1,
-            })
-        stripe.api_key = STRIPE_SECRET_KEY
-        session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=line_items,
-            mode='payment',
-            allow_promotion_codes=True,
-            success_url=request.build_absolute_uri(reverse('basket')) + '?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=request.build_absolute_uri(reverse('basket')),
-        )
-    
-        return JsonResponse({'id': session.id})
+        products = Basket(request)
+        stripe_service = StripeService()
+        session_id = stripe_service.checkout(request=request, products=products, multiple=True)
+
+        return JsonResponse({"id": session_id})

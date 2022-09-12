@@ -1,7 +1,10 @@
-from shop.settings import BASKET_SESSION
+from shop.settings import BASKET_SESSION, STRIPE_SECRET_KEY
 from store.models.product import Item
 
 from django.db.models.query import QuerySet
+from django.urls import reverse
+
+import stripe
 
 
 class Basket:
@@ -63,3 +66,59 @@ class Basket:
         return sum(
             [int(item["price"]) for item in self.basket.values()]
         )
+
+
+class StripeService:
+    def __init__(self) -> None:
+        self.stripe  = stripe
+        
+    
+    def generate_line_item(self, product):
+        return [
+                {
+                    "price_data": {
+                        "currency": "usd",
+                        "product_data": {
+                            "name": product.name,
+                            "description": product.description,
+                        },
+                        "unit_amount": product.price * 100,
+                    },
+                    "quantity": 1,
+                }
+            ]
+
+    def generate_line_items(self, products):
+        line_items = []
+        for product in products:
+            line_items.append(
+                {
+                    "price_data": {
+                        "currency": "usd",
+                        "product_data": {
+                            "name": product.name,
+                            "description": product.description,
+                        },
+                        "unit_amount": product.price * 100,
+                    },
+                    "quantity": 1,
+                }
+            )
+        return line_items
+    
+    def checkout(self, request, products, multiple=False):
+        if multiple:
+            line_items = self.generate_line_items(products=products)
+        else:
+            line_items = self.generate_line_item(product=products)
+        
+        self.stripe.api_key = STRIPE_SECRET_KEY
+        session = self.stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=line_items,
+            mode="payment",
+            success_url=request.build_absolute_uri(reverse("basket"))
+            + "?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=request.build_absolute_uri(reverse("basket")),
+        )
+        return session.id
