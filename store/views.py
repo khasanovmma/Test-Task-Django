@@ -2,7 +2,7 @@ from typing import Any
 
 
 from django.views.generic import ListView, DetailView, TemplateView, View
-from django.shortcuts import HttpResponseRedirect, get_object_or_404, render, 
+from django.shortcuts import HttpResponseRedirect, get_object_or_404, render
 from django.http import HttpRequest, JsonResponse, HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
