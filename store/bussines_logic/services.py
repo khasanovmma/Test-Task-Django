@@ -71,7 +71,7 @@ class Basket:
 class StripeService:
     def __init__(self) -> None:
         self.stripe  = stripe
-        
+        self.stripe.api_key = STRIPE_SECRET_KEY
     
     def generate_line_item(self, product):
         return [
@@ -112,13 +112,20 @@ class StripeService:
         else:
             line_items = self.generate_line_item(product=products)
         
-        self.stripe.api_key = STRIPE_SECRET_KEY
+        
         session = self.stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=line_items,
             mode="payment",
-            success_url=request.build_absolute_uri(reverse("basket"))
+            success_url=request.build_absolute_uri(reverse("basket") if multiple else reverse("detail", args=[products.id]))
             + "?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url=request.build_absolute_uri(reverse("basket")),
+            cancel_url=request.build_absolute_uri(reverse("basket") if multiple else reverse("detail", args=[products.id])),
         )
         return session.id
+    
+    def get_detail_by_session_id(self, session_id):
+        data = self.stripe.checkout.Session.retrieve(session_id)
+        name = data["customer_details"]["name"]
+        email = data["customer_details"]["email"]
+
+        return name, email
